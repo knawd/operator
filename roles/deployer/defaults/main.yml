@@ -1,0 +1,22 @@
+---
+# defaults file for Deployer
+serviceAccountName: "knawd-deployer-sa"
+image:
+  registry: quay.io
+  repository: knawd/deployer
+  tag: latest
+  pullPolicy: Always
+
+job:
+  name: "wasi-crun-deployer"
+  label: "wasi-crun-job"
+  vendor: "ubuntu_18_04"
+  libLocation: "/lib"
+  logLevel: "info"
+  ociLocation: "/usr/local/sbin"
+  configLocation: "/etc/containerd"
+  ociName: "crun"
+  nodeRoot: "/mnt/node-root"
+  isMicroK8s: false
+  autoRestart: false
+

@@ -1,0 +1,54 @@
+- name: start deployer
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: '{{ ansible_operator_meta.name }}-deployer'
+        namespace: '{{ ansible_operator_meta.namespace }}'
+      spec:
+        template:
+          metadata:
+            labels:
+              app: {{ job.name }}
+          spec:
+            restartPolicy: Never
+            hostPID: true
+            volumes:
+              - name: node-root
+                hostPath:
+                  path: /
+              - name: entrypoint
+                configMap:
+                  name: entrypoint
+                  defaultMode: 0744
+            serviceAccountName: "{{ serviceAccountName }}"
+            containers:
+              - image: "{{ image.registry }}/{{ image.repository }}:{{ image.tag }}"
+                imagePullPolicy: {{ image.pullPolicy }}
+                name: deploy-remove
+                env:
+                  - name: VENDOR
+                    value: "{{ job.vendor }}"
+                  - name: LIB_LOCATION
+                    value: "{{ job.libLocation }}"
+                  - name: LOG_LEVEL
+                    value: "{{ job.logLevel }}"
+                  - name: OCI_LOCATION
+                    value: "{{ job.ociLocation }}"
+                  - name: OCI_NAME
+                    value: "{{ job.ociName }}"
+                  - name: NODE_ROOT
+                    value: "{{ job.nodeRoot }}"
+                  - name: IS_MICROK8S
+                    value: "{{ job.isMicroK8s }}"
+                  - name: AUTO_RESTART
+                    value: "{{ job.autoRestart }}"
+                  - name: CONFIG_LOCATION
+                    value: "{{ job.configLocation }}"
+                securityContext:
+                  privileged: true
+                volumeMounts:
+                  - name: node-root
+                    mountPath: /mnt/node-root/
+                command: ["/app/manager"]
